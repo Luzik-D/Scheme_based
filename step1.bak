@@ -1,0 +1,117 @@
+
+; Р·Р°РіРѕС‚РѕРІРєР° "Р”РѕРєС‚РѕСЂР°". РЎРμРЅС‚СЏР±СЂСЊ 2022
+#lang scheme/base
+(require racket/vector)
+
+; Р’ СѓС‡РμР±РЅС‹С... С†РμР»СЏС... РёСЃРїРѕР»СЊР·СѓРμС‚СЃСЏ Р±Р°Р·РѕРІР°СЏ РІРμСЂСЃРёСЏ Scheme
+
+; РѕСЃРЅРѕРІРЅР°СЏ С„СѓРЅРєС†РёСЏ, Р·Р°РїСѓСЃРєР°СЋС‰Р°СЏ "Р”РѕРєС‚РѕСЂР°"
+; РїР°СЂР°РјРμС‚СЂ name -- РёРјСЏ РїР°С†РёРμРЅС‚Р°
+(define (visit-doctor name)
+  (printf "Hello, ~a!\n" name)
+  (print '(what seems to be the trouble?))
+  (doctor-driver-loop name)
+)
+
+; С†РёРєР» РґРёР°Р»РѕРіР° Р”РѕРєС‚РѕСЂР° СЃ РїР°С†РёРμРЅС‚РѕРј
+; РїР°СЂР°РјРμС‚СЂ name -- РёРјСЏ РїР°С†РёРμРЅС‚Р°
+(define (doctor-driver-loop name)
+    (newline)
+    (print '**) ; РґРѕРєС‚РѕСЂ Р¶РґС‘С‚ РІРІРѕРґР° СЂРμРїР»РёРєРё РїР°С†РёРμРЅС‚Р°, РїСЂРёРіР»Р°С€РμРЅРёРμРј Рє РєРѕС‚РѕСЂРѕРјСѓ СЏРІР»СЏРμС‚СЃСЏ **
+    (let ((user-response (read)))
+      (cond 
+	    ((equal? user-response '(goodbye)) ; СЂРμРїР»РёРєР° '(goodbye) СЃР»СѓР¶РёС‚ РґР»СЏ РІС‹С...РѕРґР° РёР· С†РёРєР»Р°
+             (printf "Goodbye, ~a!\n" name)
+             (print '(see you next week)))
+            (else (print (reply user-response)) ; РёРЅР°С‡Рμ Р”РѕРєС‚РѕСЂ РіРμРЅРμСЂРёСЂСѓРμС‚ РѕС‚РІРμС‚, РїРμС‡Р°С‚Р°РμС‚ РμРіРѕ Рё РїСЂРѕРґРѕР»Р¶Р°РμС‚ С†РёРєР»
+                  (doctor-driver-loop name)
+             )
+       )
+      )
+)
+
+; РіРμРЅРμСЂР°С†РёСЏ РѕС‚РІРμС‚РЅРѕРNo СЂРμРїР»РёРєРё РїРѕ user-response -- СЂРμРїР»РёРєРμ РѕС‚ РїРѕР»СЊР·РѕРІР°С‚РμР»СЏ 
+(define (reply user-response)
+      (case (random 0 2) ; СЃ СЂР°РІРЅРѕРNo РІРμСЂРѕСЏС‚РЅРѕСЃС‚СЊСЋ РІС‹Р±РёСЂР°РμС‚СЃСЏ РѕРґРёРЅ РёР· РґРІСѓС... СЃРїРѕСЃРѕР±РѕРІ РїРѕСЃС‚СЂРѕРμРЅРёСЏ РѕС‚РІРμС‚Р°
+          ((0) (hedge-answer))  ; 1РNo СЃРїРѕСЃРѕР±
+          ((1) (qualifier-answer user-response)) ; 2РNo СЃРїРѕСЃРѕР±
+
+      )
+)
+
+; 1РNo СЃРїРѕСЃРѕР± РіРμРЅРμСЂР°С†РёРё РѕС‚РІРμС‚РЅРѕРNo СЂРμРїР»РёРєРё -- СЃР»СѓС‡Р°РNoРЅС‹РNo РІС‹Р±РѕСЂ РѕРґРЅРѕРNo РёР· Р·Р°РіРѕС‚РѕРІР»РμРЅРЅС‹С... С„СЂР°Р·, РЅРμ СЃРІСЏР·Р°РЅРЅС‹С... СЃ СЂРμРїР»РёРєРѕРNo РїРѕР»СЊР·РѕРІР°С‚РμР»СЏ
+(define (hedge-answer)
+       (pick-random-vector '#((please go on)
+                              (many people have the same sorts of feelings)
+                              (many of my patients have told me the same thing)
+                              (please continue))
+         )
+)
+
+; СЃР»СѓС‡Р°РNoРЅС‹РNo РІС‹Р±РѕСЂ РѕРґРЅРѕРіРѕ РёР· СЌР»РμРјРμРЅС‚РѕРІ РЅРμРїСѓСЃС‚РѕРіРѕ РІРμРєС‚РѕСЂР°
+(define (pick-random-vector vctr)
+  (vector-ref vctr (random 0 (vector-length vctr)))
+)
+
+; 2РNo СЃРїРѕСЃРѕР± РіРμРЅРμСЂР°С†РёРё РѕС‚РІРμС‚РЅРѕРNo СЂРμРїР»РёРєРё -- Р·Р°РјРμРЅР° Р»РёС†Р° РІ СЂРμРїР»РёРєРμ РїРѕР»СЊР·РѕРІР°С‚РμР»СЏ Рё РїСЂРёРїРёСЃС‹РІР°РЅРёРμ Рє СЂРμР·СѓР»СЊС‚Р°С‚Сѓ СЃР»СѓС‡Р°РNoРЅРѕ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РЅРѕРІРѕРіРѕ РЅР°С‡Р°Р»Р°
+(define (qualifier-answer user-response)
+        (append (pick-random-vector '#((you seem to think that)
+                                       (you feel that)
+                                       (why do you believe that)
+                                       (why do you say that))
+                )
+                (change-person user-response)
+        )
+ )
+
+; Р·Р°РјРμРЅР° Р»РёС†Р° РІРѕ С„СЂР°Р·Рμ
+(define (change-person phrase)
+        (many-replace
+		'((am are)
+        (are am)
+        (i you)
+        (me you)
+        (mine yours)
+        (my your)
+        (myself yourself)
+        (you i)
+        (your my)
+        (yours mine)
+        (yourself myself)
+        (we you)
+        (us you)
+        (our your)
+        (ours yours)
+        (ourselves yourselves)
+        (yourselves ourselves)
+        (shall will))
+                      phrase)
+ )
+
+; РѕСЃСѓС‰РμСЃС‚РІР»РμРЅРёРμ РІСЃРμС... Р·Р°РјРμРЅ РІ СЃРїРёСЃРєРμ lst РїРѕ Р°СЃСЃРѕС†РёР°С‚РёРІРЅРѕРјСѓ СЃРїРёСЃРєСѓ replacement-pairs
+(define (many-replace replacement-pairs lst)
+        (cond ((null? lst) lst)
+              (else (let ((pat-rep (assoc (car lst) replacement-pairs))) ; Р”РѕРєС‚РѕСЂ РёС‰РμС‚ РїРμСЂРІС‹РNo СЌР»РμРјРμРЅС‚ СЃРїРёСЃРєР° РІ Р°СЃСЃРѕС†РёР°С‚РёРІРЅРѕРј СЃРїРёСЃРєРμ Р·Р°РјРμРЅ
+                      (cons (if pat-rep (cadr pat-rep) ; РμСЃР»Рё РїРѕРёСЃРє Р±С‹Р» СѓРґР°С‡РμРЅ, С‚Рѕ РІ РЅР°С‡Р°Р»Рѕ РѕС‚РІРμС‚Р° Р”РѕРєС‚РѕСЂ РїРёС€РμС‚ Р·Р°РјРμРЅСѓ
+                                (car lst) ; РёРЅР°С‡Рμ РІ РЅР°С‡Р°Р»Рμ РѕС‚РІРμС‚Р° РїРѕРјРμС‰Р°РμС‚СЃСЏ РЅР°С‡Р°Р»Рѕ СЃРїРёСЃРєР° Р±РμР· РёР·РјРμРЅРμРЅРёРNo
+                            )
+                            (many-replace replacement-pairs (cdr lst)) ; СЂРμРєСѓСЂСЃРёРІРЅРѕ РїСЂРѕРёР·РІРѕРґСЏС‚СЃСЏ Р·Р°РјРμРЅС‹ РІ С...РІРѕСЃС‚Рμ СЃРїРёСЃРєР°
+                        )
+                     )
+               )
+         )
+)
+; РІ Racket РЅРμС‚ vector-foldl, СЂРμР°Р»РёР·СѓРμРј РґР»СЏ СЃР»СѓС‡Р°СЏ СЃ РѕРґРЅРёРј РІРμРєС‚РѕСЂРѕРј (vect-foldl f init vctr)
+; Сѓ f С‚СЂРё РїР°СЂР°РјРμС‚СЂР° i -- РёРЅРґРμРєСЃ С‚РμРєСѓС‰РμРіРѕ СЌР»РμРјРμРЅС‚Р°, result -- С‚РμРєСѓС‰РёРNo СЂРμР·СѓР»СЊС‚Р°С‚ СЃРІС‘СЂС‚РєРё, elem -- С‚РμРєСѓС‰РёРNo СЌР»РμРјРμРЅС‚ РІРμРєС‚РѕСЂР°
+(define (vector-foldl f init vctr)
+ (let ((length (vector-length vctr)))
+  (let loop ((i 0) (result init))
+   (if (= i length) result
+    (loop (add1 i) (f i result (vector-ref vctr i)))))))
+	
+; Р°РЅР°Р»РѕРіРёС‡РЅРѕ РѕС‚ РєРѕРЅС†Р° РІРμРєС‚РѕСЂР° Рє РЅР°С‡Р°Р»Сѓ
+(define (vector-foldr f init vctr)
+ (let ((length (vector-length vctr)))
+  (let loop ((i (sub1 length)) (result init))
+   (if (= i -1) result
+    (loop (sub1 i) (f i result (vector-ref vctr i)))))))
