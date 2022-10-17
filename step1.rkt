@@ -43,7 +43,10 @@
        (pick-random-vector '#((please go on)
                               (many people have the same sorts of feelings)
                               (many of my patients have told me the same thing)
-                              (please continue))
+                              (please continue)
+                              (can you describe it in more detail?)
+                              (it's absolutely normal to feel that way)
+                              )
          )
 )
 
@@ -57,7 +60,9 @@
         (append (pick-random-vector '#((you seem to think that)
                                        (you feel that)
                                        (why do you believe that)
-                                       (why do you say that))
+                                       (why do you say that)
+                                       (what do you think is the reason why)
+                                       (you emphasize that))
                 )
                 (change-person user-response)
         )
@@ -65,7 +70,7 @@
 
 ; замена лица во фразе
 (define (change-person phrase)
-        (many-replace
+        (many-replace-v2
 		'((am are)
         (are am)
         (i you)
@@ -99,6 +104,25 @@
                      )
                )
          )
+)
+
+; итеративная версия many-replace
+(define (many-replace-v2 replacement-pairs lst)
+  (let helper ((replacement-pairs replacement-pairs) (lst lst) (answer '())) ; вспомогательная функция, результат строится в список answer
+    (cond ((null? lst) (reverse answer))
+          (else (let ((pat-rep (assoc (car lst) replacement-pairs)))
+                  (helper
+                     replacement-pairs
+                     (cdr lst)
+                     (cons (if pat-rep (cadr pat-rep)
+                               (car lst)
+                           )
+                           answer)
+                   )
+                )
+          )
+     )
+  )
 )
 ; в Racket нет vector-foldl, реализуем для случая с одним вектором (vect-foldl f init vctr)
 ; у f три параметра i -- индекс текущего элемента, result -- текущий результат свёртки, elem -- текущий элемент вектора
