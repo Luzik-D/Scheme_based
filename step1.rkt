@@ -70,7 +70,7 @@
 
 ; замена лица во фразе
 (define (change-person phrase)
-        (many-replace-v2
+        (many-replace-v3
 		'((am are)
         (are am)
         (i you)
@@ -122,6 +122,19 @@
                 )
           )
      )
+  )
+)
+
+; реализация many-replace с использованием map
+(define (many-replace-v3 replacement-pairs lst)
+  (map (lambda (n)
+         (let ((pat-rep (assoc n replacement-pairs)))
+          (if pat-rep (cadr pat-rep)
+              n
+          )
+         )
+       )
+       lst
   )
 )
 ; в Racket нет vector-foldl, реализуем для случая с одним вектором (vect-foldl f init vctr)
