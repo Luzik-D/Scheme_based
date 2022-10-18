@@ -9,7 +9,7 @@
 (define (visit-doctor name)
   (printf "Hello, ~a!\n" name)
   (print '(what seems to be the trouble?))
-  (doctor-driver-loop name)
+  (doctor-driver-loop-v2 name '())
 )
 
 ; цикл диалога Доктора с пациентом
@@ -29,6 +29,24 @@
       )
 )
 
+; цикл диалога Доктора с пациентом с сохранением истории ответов
+; параметр name -- имя пациента
+; параметр history -- список ответов пациента
+(define (doctor-driver-loop-v2 name history)
+  (newline)
+  (print '**)
+  (let ((user-response (read)))
+    (cond
+      ((equal? user-response '(goodbye))
+       (printf "Goodbye, ~a!\n" name)
+       (print '(see you next week)))
+      (else (print (reply-v2 user-response history))
+            (doctor-driver-loop-v2 name (cons user-response history))
+      )
+    )
+  )
+)
+
 ; генерация ответной реплики по user-response -- реплике от пользователя 
 (define (reply user-response)
       (case (random 0 2) ; с равной вероятностью выбирается один из двух способов построения ответа
@@ -36,6 +54,17 @@
           ((1) (qualifier-answer user-response)) ; 2й способ
 
       )
+)
+
+; версия генерации ответной реплики с тремя способами
+(define (reply-v2 user-response history)
+  (let ((number-of-choices (if (null? history) 2 3))) ; 3й способ не доступен, если список истории пуст
+        (case (random 0 number-of-choices)
+          ((0) (hedge-answer)) ; 1й способ
+          ((1) (qualifier-answer user-response)) ; 2й способ
+          ((2) (history-answer history)) ; 3й способ
+        )
+  )
 )
 
 ; 1й способ генерации ответной реплики -- случайный выбор одной из заготовленных фраз, не связанных с репликой пользователя
@@ -67,6 +96,11 @@
                 (change-person user-response)
         )
  )
+
+; 3й способ генерации ответной реплики -- замена лица в ранее сказанной реплике пользователя и приписывание к результату заготовленного начала
+(define (history-answer history)
+  (append '(earlier you said that) (change-person (pick-random-vector (list->vector history))))
+)
 
 ; замена лица во фразе
 (define (change-person phrase)
@@ -112,12 +146,12 @@
     (cond ((null? lst) (reverse answer))
           (else (let ((pat-rep (assoc (car lst) replacement-pairs)))
                   (helper
-                     replacement-pairs
-                     (cdr lst)
+                     replacement-pairs ; 1й аргумент
+                     (cdr lst) ; 2й аргумент
                      (cons (if pat-rep (cadr pat-rep)
                                (car lst)
                            )
-                           answer)
+                           answer) ; добавляем в ответ нужное слово
                    )
                 )
           )
