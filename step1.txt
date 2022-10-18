@@ -84,11 +84,6 @@
   (vector-ref vctr (random 0 (vector-length vctr)))
 )
 
-; случайный выбор одного из элементов непустого списка
-(define (pick-random-list lst)
-  (list-ref lst (random 0 (length lst)))
-)
-
 ; 2й способ генерации ответной реплики -- замена лица в реплике пользователя и приписывание к результату случайно выбранного нового начала
 (define (qualifier-answer user-response)
         (append (pick-random-vector '#((you seem to think that)
@@ -105,7 +100,7 @@
 
 ; 3й способ генерации ответной реплики -- замена лица в ранее сказанной реплике пользователя и приписывание к результату заготовленного начала
 (define (history-answer history)
-  (append '(earlier you said that) (change-person (pick-random-list history)))
+  (append '(earlier you said that) (change-person (pick-random-vector (list->vector history))))
 )
 
 ; замена лица во фразе
