@@ -191,3 +191,34 @@
   (let loop ((i (sub1 length)) (result init))
    (if (= i -1) result
     (loop (sub1 i) (f i result (vector-ref vctr i)))))))
+
+
+
+;---------------------- block 2 --------------------------
+
+(define (ask-patient-name)
+  (begin
+    (println '(next!))
+    (println '(who are you?))
+    (print '**)
+    (car (read))
+  )
+)
+
+(define (visit-doctor-v2 stop-word limit-people)
+  (let new-visitor ((stop-word stop-word) (limit-people limit-people) (name (ask-patient-name)))
+        (cond ((or (equal? stop-word name) (= limit-people 0)) (println '(time to go home))) ; выход из цикла по имени, либо 0 количестве пациентов
+              ((begin
+                (printf "Hello, ~a!\n" name) ; приветствие для каждого нового пациента
+                (print '(what seems to be the trouble?))
+                (doctor-driver-loop-v2 name '())
+                (if (= limit-people 1) (printf "\nTime to go home\n") ; выход после последнего пациента
+                    (new-visitor stop-word (- limit-people 1) (ask-patient-name))
+                )
+              ))
+        )
+  )
+)
+       
+
+(visit-doctor-v2 'stop 3)
