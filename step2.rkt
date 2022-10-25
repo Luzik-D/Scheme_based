@@ -207,7 +207,7 @@
 
 (define (visit-doctor-v2 stop-word limit-people)
   (let new-visitor ((stop-word stop-word) (limit-people limit-people) (name (ask-patient-name)))
-        (cond ((or (equal? stop-word name) (= limit-people 0)) (println '(time to go home))) ; выход из цикла по имени, либо 0 количестве пациентов
+        (cond ((or (equal? stop-word name) (= limit-people 0)) (println '(time to go home))) ; выход из цикла по имени, либо 0-м количестве пациентов
               ((begin
                 (printf "Hello, ~a!\n" name) ; приветствие для каждого нового пациента
                 (print '(what seems to be the trouble?))
@@ -219,6 +219,100 @@
         )
   )
 )
-       
 
-(visit-doctor-v2 'stop 3)
+
+(define keywords-structure '#(
+  #( ; 1-я группа
+    #(depressed suicide exams university)
+    #(  
+	  (when you feel depressed, go out for ice cream)
+          (depression is a disease that can be treated)
+	)
+  )
+  #( ; 2-я группа 
+    #(mother father parents brother sister uncle aunt grandma grandpa)
+    #(
+	  (tell me more about your * , i want to know all about your *)
+          (why do you feel that way about your * ?)
+	)
+  )
+  #( ; 3-я группа
+    #(university scheme lections)
+	#(
+	  (your education is important)
+	  (how much time do you spend on your studies ?)
+	)
+  )
+))
+
+(define (reply-v32 user-response history)
+  (let ((number-of-choices (if (null? history) 2 3))) ; 3й способ не доступен, если список истории пуст
+        (case (random 0 number-of-choices)
+          ((0) (hedge-answer)) ; 1й способ
+          ((1) (qualifier-answer user-response)) ; 2й способ
+          ((2) (history-answer history)) ; 3й способ
+        )
+  )
+)
+
+
+; вектор всех ключевых слов
+(define keywords (vector-append (vector-ref (vector-ref keywords-structure 0) 0)
+                                (vector-ref (vector-ref keywords-structure 1) 0)
+                                (vector-ref (vector-ref keywords-structure 2) 0)))
+
+
+; проверка на наличие хотя бы одного ключевого слова в предложении
+(define (have-keywords? statement keywords)
+  (let ((id-list (build-list (length statement) values))) ; список индексов в предложении
+        (number? (ormap (lambda (n) (vector-member (list-ref statement n) keywords)) id-list))
+  )
+)
+
+; вспомогательная функция, вычисляющая количество возможных выборов стратегий
+(define (number-of-choices user-response history keywords)
+  (cond ((have-keywords? user-response keywords) (if (null? history) 3 4))
+        ((not (null? history)) (if (have-keywords? user-response keywords) 4 3))
+        (else 2)))
+
+
+; вспомогательная функция, выдающая номер для стратегии с истории и стратегии с ключевыми словами в зависимости от возможности их применения
+; если одна из стратегий не может быть выполнена, то ей выдается 3 (последний) номер (не будет вычислен в результате (random 0 3))
+(define (test user-response history keywords)
+  (let ((hs (if (null? history) 4 3))
+        (ks (if (have-keywords? user-response keywords)
+                (if (null? history) 3 4)
+                4
+            )))
+    (begin
+      (print '(hs))
+      (println hs)
+      (print '(ks))
+      (println ks))))
+
+(define (keywords-answer user-response keywords)
+  (println '(we are in key-answ strateg)))
+
+
+(define (reply-v3 user-response history keywords)
+  (let ((choices-num (random 0 (number-of-choices user-response history keywords)))
+        (history-strategy-num (if (null? history) 3 2))
+        (keywords-strategy-num (if (have-keywords? user-response keywords)
+                                   (if (null? history) 2 3) 3))
+       )
+       (begin
+         (println choices-num))
+       (cond ((= choices-num 0) (println '(hedge-answer)))
+             ((= choices-num 1) (println '(qualifier-answer user-response)))
+             ((= choices-num history-strategy-num) (println '(history-answer history)))
+             ((= choices-num keywords-strategy-num) (println '(keywords-answer user-response keywords)))
+       )
+  )
+)
+
+
+
+(reply-v3 '(i have met with my uncle) '() keywords)
+(reply-v3 '(i have met with my uncle) '(history) keywords)
+(reply-v3 '(i have met with my friend) '(history) keywords)
+(reply-v3 '(i have met with my friend) '() keywords)
