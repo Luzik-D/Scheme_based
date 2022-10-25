@@ -245,21 +245,12 @@
   )
 ))
 
-(define (reply-v32 user-response history)
-  (let ((number-of-choices (if (null? history) 2 3))) ; 3й способ не доступен, если список истории пуст
-        (case (random 0 number-of-choices)
-          ((0) (hedge-answer)) ; 1й способ
-          ((1) (qualifier-answer user-response)) ; 2й способ
-          ((2) (history-answer history)) ; 3й способ
-        )
-  )
-)
-
 
 ; вектор всех ключевых слов
 (define keywords (vector-append (vector-ref (vector-ref keywords-structure 0) 0)
                                 (vector-ref (vector-ref keywords-structure 1) 0)
                                 (vector-ref (vector-ref keywords-structure 2) 0)))
+
 
 
 ; проверка на наличие хотя бы одного ключевого слова в предложении
@@ -276,43 +267,87 @@
         (else 2)))
 
 
-; вспомогательная функция, выдающая номер для стратегии с истории и стратегии с ключевыми словами в зависимости от возможности их применения
-; если одна из стратегий не может быть выполнена, то ей выдается 3 (последний) номер (не будет вычислен в результате (random 0 3))
-(define (test user-response history keywords)
-  (let ((hs (if (null? history) 4 3))
-        (ks (if (have-keywords? user-response keywords)
-                (if (null? history) 3 4)
-                4
-            )))
-    (begin
-      (print '(hs))
-      (println hs)
-      (print '(ks))
-      (println ks))))
+;(vector-map (lambda (n) (vector-append (vector-ref (vector-ref keywords-structure n) 0))) (build-vector 3 values))
+(define (get-keywords2 keywords-structure)
+  (vector-append (vector-map (lambda (n) (vector-ref (vector-ref keywords-structure n) 0)) (build-vector 3 values)))
+)
 
-(define (keywords-answer user-response keywords)
-  (println '(we are in key-answ strateg)))
+;(define kw (get-keywords2 keywords-structure))
 
+;(define (have-keywords2? statement keywords)
+ ; (let ((id-list (build-list (length statement) values))
+  ;      (str-vector (build-vector (vector-length keywords) values))) ; список индексов в предложении
+   ;     (vector-map (lambda (y) (ormap (lambda (n) (vector-member (list-ref statement n) (vector-ref y 0))) id-list)) keywords)
+    
+  ;)
+;)
 
-(define (reply-v3 user-response history keywords)
+(define (vector-id-keywords-by-group-non-filtered statement keywords)
+  (let ((id-list (build-list (length statement) values))
+        (str-vector (build-vector (vector-length keywords) values))) ; список индексов в предложении
+        (vector-map (lambda (y) (map (lambda (n) (vector-member (list-ref statement n) (vector-ref y 0))) id-list)) keywords)
+    
+  )
+)
+
+(define (vector-id-keywords-by-group statement keywords)
+  (let ((id-list (build-list (length statement) values))
+        (str-vector (build-vector (vector-length keywords) values))) ; список индексов в предложении
+        (matrix-without-#f (vector-map (lambda (y) (map (lambda (n) (vector-member (list-ref statement n) (vector-ref y 0))) id-list)) keywords))
+    
+  )
+)
+;(define (test3 matrix)
+  ;(vector-map (lambda (y) (map (lambda (n) (eq? (list-ref y n) #t) (cons '() n)) (build-list (length y) values))) matrix))
+ ; (vector-map (lambda (y) (map (lambda (n) (println (list-ref y n))) (build-list (length y) values))) matrix))
+
+; вспомогательная функция для фильтра
+(define (true? x)
+  (not (equal? x #f)))
+
+; вспомогательная функция, строящая вектор из списков из исходных векторов матрицы, исключая все #t
+(define (matrix-without-#f matrix)
+  (vector-map (lambda (n) (filter true? n)) matrix))
+
+;(vector-id-keywords-by-group-non-filtered '(i uncle am mother scheme suicide) keywords-structure)
+;(vector-id-keywords-by-group '(i uncle am mother scheme suicide) keywords-structure)
+
+; вспомогательная функция, строящая вектор из длин его подсписков (ключевых слов, разбитых по группам)
+(define (vec-sum-keywords-by-group veclst)
+  (vector-map (lambda (n) (length n)) veclst))
+
+(define (sum-vec vec)
+  ;(vector-foldl + 0 vec)) не работает
+  (let helper ((sum 0) (id 0))
+    (if (= id (vector-length vec)) sum
+        (helper (+ sum (vector-ref vec id)) (+ id 1)))))
+
+(define (group-keywords-probability vec)
+  (let ((sum (sum-vec vec)))
+    (vector-map (lambda (n) (if (= sum 0) sum (/ n sum))) vec)))
+  ;(vector-map (lambda (n) (/ n (if (= (sum-vec vec) 0) 1)) vec))
+
+(define (keywords-answer user-response keywords-structure)
+  (vector-id-keywords-by-group user-response keywords-structure))
+
+(define (reply-v3 user-response history keywords-structure keywords)
   (let ((choices-num (random 0 (number-of-choices user-response history keywords)))
-        (history-strategy-num (if (null? history) 3 2))
+        (history-strategy-num (if (null? history) 3 2)) ; ставим последним номером, если невозможно применить
         (keywords-strategy-num (if (have-keywords? user-response keywords)
-                                   (if (null? history) 2 3) 3))
+                                   (if (null? history) 2 3) 3)); учитываем случай, когда и стратегия с историей применима, и с ключевыми словами
        )
-       (begin
-         (println choices-num))
        (cond ((= choices-num 0) (println '(hedge-answer)))
              ((= choices-num 1) (println '(qualifier-answer user-response)))
              ((= choices-num history-strategy-num) (println '(history-answer history)))
-             ((= choices-num keywords-strategy-num) (println '(keywords-answer user-response keywords)))
+             ((= choices-num keywords-strategy-num) (keywords-answer user-response keywords-structure))
        )
   )
 )
 
 
 
-(reply-v3 '(i have met with my uncle) '() keywords)
-(reply-v3 '(i have met with my uncle) '(history) keywords)
-(reply-v3 '(i have met with my friend) '(history) keywords)
-(reply-v3 '(i have met with my friend) '() keywords)
+;тесты для выбора стратегии
+(reply-v3 '(i have met with my uncle) '() keywords-structure keywords)
+;(reply-v3 '(i have met with my uncle) '(history) keywords)
+;(reply-v3 '(i have met with my friend) '(history) keywords)
+;(reply-v3 '(i have met with my friend) '() keywords)
