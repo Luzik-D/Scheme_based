@@ -229,6 +229,8 @@
     #(  
 	  (when you feel depressed, go out for ice cream)
           (depression is a disease that can be treated)
+          (do not lose hope)
+          (you can do everything if you will work hard)
 	)
   )
   #( ; 2-я группа 
@@ -236,6 +238,8 @@
     #(
 	  (tell me more about your * , i want to know all about your *)
           (why do you feel that way about your * ?)
+          (what is your relashionship with your family ?)
+          (do you spend a lot of time with * ?)
 	)
   )
   #( ; 3-я группа
@@ -243,7 +247,23 @@
 	#(
 	  (your education is important)
 	  (how much time do you spend on your studies ?)
+          (what do you like most about studiyng ?)
+          (what do you dislike most about studying ?)
 	)
+  )
+  #( ; 4-я группа
+    #(sport game activity hobby)
+        #(
+          (what kind of * do you prefer ?)
+          (it is important to do what you love)
+        )
+  )
+  #( ; 5-я группа
+    #(friend girlfriend boyfriend teammate)
+        #(
+          (how long have you known your * ?)
+          (how often do you spent time with your surroundings ?)
+        )
   )
 ))
 
